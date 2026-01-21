@@ -10,3 +10,6 @@ jobs:
       - name: Log Push Event Github Context
         run: |
           echo '${{ toJSON(github) }}'
+      - name: Log Push Event
+        run: |
+          echo '${{ toJSON(github.event) }}'

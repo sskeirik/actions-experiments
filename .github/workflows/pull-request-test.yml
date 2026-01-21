@@ -11,3 +11,6 @@ jobs:
       - name: Log Pull Request Event Github Context
         run: |
           echo '${{ toJSON(github) }}'
+      - name: Log Pull Request Event
+        run: |
+          echo '${{ toJSON(github.event) }}'

@@ -7,6 +7,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Log Push Event
+      - name: Log Push Event Github Context
         run: |
-          echo '${{ github.event }}'
+          echo '${{ toJSON(github) }}'

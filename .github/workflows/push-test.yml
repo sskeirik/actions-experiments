@@ -1,0 +1,12 @@
+name: Push Test
+
+on:
+  push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log Push Event
+        run: |
+          echo '${{ github.event }}'

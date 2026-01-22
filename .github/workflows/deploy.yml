@@ -112,13 +112,14 @@ jobs:
           commit_date=$(cd code; git log -1 --format=%cs)
           config_dir="release-${commit_date}-${{ github.ref_name }}"
           echo "$config_dir"
+          # ls devops/
 
       - name: Deploy Image
         env:
-          KEY:         ${{ secrets.DEPLOYMENT_USER_SSH_KEY }}
-          KNOWN_HOSTS: ${{ secrets.DEPLOYMENT_USER_KNOWN_HOSTS }}
-          USER:        ${{ secrets.DEPLOYMENT_USER }}
           SERVER:      ${{ secrets.STAGING_DEPLOYMENT_SERVER }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOYMENT_USER_KNOWN_HOSTS }} # generate by: ssh-keyscan $SERVER
+          USER:        ${{ secrets.DEPLOYMENT_USER }}
+          KEY:         ${{ secrets.DEPLOYMENT_USER_SSH_KEY }}     # must generate key and run: ssh-copy-id -i <id_file>.pub "$USER@$SERVER"
         run: |
           mkdir -p 700 "$HOME/.ssh"
           echo "$KEY" > "$HOME/.ssh/id_ed25519"

@@ -115,8 +115,10 @@ jobs:
 
       - name: Deploy Image
         run: |
-          which ssh
-          # ssh '${{ secrets.deployment_user }}@${{ secrets.staging_deployment_server }}' << EOF
-
-          # EOF
+          mkdir 700 "$HOME/.ssh"
+          echo "${{ secrets.deployment_user_key }}" > "$HOME/.ssh/id_ed25519"
+          chmod 600 "$HOME/.ssh/id_ed25519"
+          ssh -i "$HOME/.ssh/id_ed25519" '${{ secrets.deployment_user }}@${{ secrets.staging_deployment_server }}' << EOF
+            cat /etc/os-release
+          EOF
 

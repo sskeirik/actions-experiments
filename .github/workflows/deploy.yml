@@ -76,7 +76,7 @@ jobs:
                     -H 'Authorization: Bearer ${{ github.token }}' \
                     -H 'X-GitHub-Api-Version: 2022-11-28'          \
                     '${{ github.api_url }}/repos/'"$REPO"'/actions/runs?head_sha=${{ steps.get_pr_head.outputs.pr_head }}&per_page=100' )
-          echo 'Workflow Runs for PR Head ${{ steps.get_pr_head.pr_head }}'
+          echo 'Workflow Runs for PR Head ${{ steps.get_pr_head.outputs.pr_head }}'
           jq '.' <<< "$runs"
           # ensure that we retrieved all workflow runs
           jq -e '.total_count == ( .workflow_runs | length )' <<< "$runs"

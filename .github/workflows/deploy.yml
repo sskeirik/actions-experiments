@@ -90,16 +90,28 @@ jobs:
         run: |
           ghcr_token=$(base64 <<< "${{ github.token }}")
           short_sha=${GITHUB_SHA:0:7}
+          # --fail-with-body
           curl -I -L                                             \
             -H 'Accept: application/vnd.oci.image.index.v1+json' \
             -H "Authorization: Bearer $ghcr_token"               \
             'https://ghcr.io/v2/${{ github.repository }}/manifests/${{ github.ref_name }}-'"$short_sha"
 
+      - name: Checkout Code Repository
+        uses: actions/checkout@v5.0.0
+        with:
+          path: code
+
+      - name: Checkout Deployment Cofing Repository
+        uses: actions/checkout@v5.0.0
+        with:
+          # repository:
+          path: devops
+
       - name: Check Deployment Configuration
         run: |
-          git log
-          commit_date=$(git log -1 --format=%cs)
+          commit_date=$(cd code; git log -1 --format=%cs)
           config_dir="release-${commit_date}-${{ github.ref_name }}"
+          echo "$config_dir"
 
       # - name: Deploy Image
       #   run: |

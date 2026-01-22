@@ -43,11 +43,6 @@ on:
         type: boolean
         default: 'false'
 
-# Store user-defined inputs in env vars to avoid injections
-env:
- REPO: ${{ github.repository }}
- REF: ${{ github.ref_name }}
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -56,15 +51,15 @@ jobs:
         id: get_pr_head
         if: ${{ inputs.force == false }}
         run: |
-          echo "List of PRs for $REF"
+          echo 'List of PRs for ${{ github.ref_name }}'
           prs=$( curl -L                                          \
                    -H 'Accept: application/vnd.github+json'       \
                    -H 'Authorization: Bearer ${{ github.token }}' \
                    -H 'X-GitHub-Api-Version: 2022-11-28'          \
-                   '${{ github.api_url }}/repos/'"$REPO"'/pulls?state=closed&base='"$REF" )
+                   '${{ github.api_url }}/repos/${{ github.repository }}/pulls?state=closed&base=${{ github.ref_name }}' )
           jq '.' <<< "$prs"
 
-          echo "Foreach PR into $REF, Get PR HEAD Commit SHA"
+          echo 'Foreach PR into ${{ github.ref_name }}, Get PR HEAD Commit SHA'
           matching_pr_heads=$( jq -c 'map( select( .merge_commit_sha == "${{ github.sha }}" ) | .head.sha )' <<< "$prs" )
           jq '.' <<< "$matching_pr_heads"
 
@@ -82,7 +77,7 @@ jobs:
                     -H 'Accept: application/vnd.github+json'       \
                     -H 'Authorization: Bearer ${{ github.token }}' \
                     -H 'X-GitHub-Api-Version: 2022-11-28'          \
-                    '${{ github.api_url }}/repos/'"$REPO"'/actions/runs?head_sha=${{ steps.get_pr_head.outputs.pr_head }}&per_page=100' )
+                    '${{ github.api_url }}/repos/${{ github.repository }}/actions/runs?head_sha=${{ steps.get_pr_head.outputs.pr_head }}&per_page=100' )
           jq '.' <<< "$runs"
 
           echo 'Were All Workflow Runs for PR Head Retrieved?'
@@ -90,3 +85,25 @@ jobs:
 
           echo 'Did All Workflow Runs Pass?'
           jq -e '.workflow_runs | all(.status == "completed" and .conclusion == "success")' <<< "$runs"
+
+      - name: Check ghcr.io Image Availability
+        run: |
+          ghcr_token=$(base64 <<< "${{ github.token }}")
+          short_sha=${GITHUB_SHA:0:7}
+          curl -I -L                                             \
+            -H 'Accept: application/vnd.oci.image.index.v1+json' \
+            -H "Authorization: Bearer $ghcr_token"               \
+            'https://ghcr.io/v2/${{ github.repository }}/manifests/${{ github.ref_name }}-'"$short_sha"
+
+      - name: Check Deployment Configuration
+        run: |
+          git log
+          commit_date=$(git log -1 --format=%cs)
+          config_dir="release-${commit_date}-${{ github.ref_name }}"
+
+      # - name: Deploy Image
+      #   run: |
+      #     ssh '${{ secrets.deployment_user }}@${{ secrets.staging_deployment_server }}' << EOF
+
+      #     EOF
+

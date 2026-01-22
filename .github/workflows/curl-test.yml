@@ -1,0 +1,12 @@
+name: Run Curl Test
+
+on:
+  pull_request
+
+jobs:
+  push-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Curl
+        run: |
+          curl localhost

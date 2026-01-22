@@ -1,3 +1,35 @@
+# Notes:
+#
+# This workflow makes heavy use of github workflow interpolation and jq.
+# We describe a few bits of syntax here to aid future readers.
+#
+# 1. To interpolate values from the github runner into workflow commands,
+#    use the syntax ${{workflow_expr}}
+#
+#    Note that this syntax does not conflict with linux shell use of ${shell_expr}
+#    as variable interpolation because github workflow interpolation always runs first.
+#
+# 2. To invoke jq, use: jq 'jq_expr'
+#
+#    Input will be read from stdin.
+#    In our case, we use BASH/ZSH herestrings to write the value of shell variable to stdin, i.e.
+#
+#    jq 'jq_expr' <<< "$shell_var"
+#
+# 3. The jq tool takes a variety of command line options, but we describe the invocations that we use:
+#
+#    1. jq    'jq_expr' - returns the result of 'jq_expr' with a human-readable formatter applied
+#    2. jq -c 'jq_expr' - returns the result of 'jq_expr' with a compact formatter applied (generates minimal size JSON blob)
+#    3. jq -e 'jq_expr' - like invocation (1), but process has an exit code of 0 if final output is truthy; otherwise, it has an exit code of 1
+#
+# 4. The jq tool has an expression language where each operator takes a JSON blob as input and produces JSON as output.
+#    In our tool, we use a few jq built-ins:
+#
+#    - map(expr)    - takes a JSON array and returns the array resulting from applying expr to each array element
+#    - select(expr) - takes any JSON value, returns nothing if expr applied to the value is falsy; otherwise, returns the value itself
+#    - .key         - takes a JSON object or null, returns either the value of the given key or 'null' if the key is not present or input is null
+#    - length       - takes a JSON array, returns its length
+
 name: Deploy
 
 on:

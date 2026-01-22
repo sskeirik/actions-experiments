@@ -18,7 +18,7 @@ jobs:
                    '${{ github.api_url }}/repos/${{ github.repository }}/pulls?state=closed&base=${{ github.ref_name }}' )
           jq '.' <<< "$prs"
           # for each PR whose merge commit matches the workflow branch commit hash, get the PR head commit sha
-          matching_pr_heads=$( jq -c 'map( select( .merge_commit_sha == ${{ github.sha }} ) | .head.sha )' <<< "$prs" )
+          matching_pr_heads=$( jq -c 'map( select( .merge_commit_sha == "${{ github.sha }}" ) | .head.sha )' <<< "$prs" )
           jq '.' <<< "$matching_pr_heads"
           # ensure that we only have 1 matching PR head
           jq -e 'length == 1' <<< "$matching_pr_heads"

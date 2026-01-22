@@ -52,7 +52,7 @@ jobs:
           # get list of PRs for base branch
           prs=$( curl -L                                          \
                    -H 'Accept: application/vnd.github+json'       \
-                   -H 'Authorization: Bearer '"$REPO"             \
+                   -H 'Authorization: Bearer ${{ github.token }}' \
                    -H 'X-GitHub-Api-Version: 2022-11-28'          \
                    '${{ github.api_url }}/repos/'"$REPO"'/pulls?state=closed&base='"$REF" )
           echo "List of PRs for $REF"

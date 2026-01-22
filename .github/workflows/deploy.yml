@@ -36,7 +36,12 @@
 name: Deploy
 
 on:
-  workflow_dispatch
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Force deployment to run without PR Process"
+        type: boolean
+        default: 'false'
 
 jobs:
   deploy:
@@ -44,6 +49,7 @@ jobs:
     steps:
       - name: Get Matching PR Head
         id: get_pr_head
+        if: ${{ inputs.force == false }}
         # Store user-defined inputs in env vars so control characters to avoid injections
         env:
           REPO: ${{ github.repository }}
@@ -67,6 +73,7 @@ jobs:
           echo "pr_head=$(jq -c '.[]' <<< "$matching_pr_heads" | tr -d '"')" >> "$GITHUB_OUTPUT"
 
       - name: Get Workflow Runs for Matching PR Head
+        if: ${{ inputs.force == false }}
         env:
           REPO: ${{ github.repository }}
         run: |

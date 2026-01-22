@@ -126,9 +126,8 @@ jobs:
           chmod 600 "$HOME/.ssh/id_ed25519"
           chmod 600 "$HOME/.ssh/known_hosts"
           echo "Attmepting SSH"
-          ssh -tt -i "$HOME/.ssh/id_ed25519" "$USER@$SERVER" << EOF
+          ssh -q -tt -i "$HOME/.ssh/id_ed25519" "$USER@$SERVER" << EOF
             cat /etc/os-release
             exit 0
-
           EOF
 

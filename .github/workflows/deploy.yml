@@ -113,9 +113,10 @@ jobs:
           config_dir="release-${commit_date}-${{ github.ref_name }}"
           echo "$config_dir"
 
-      # - name: Deploy Image
-      #   run: |
-      #     ssh '${{ secrets.deployment_user }}@${{ secrets.staging_deployment_server }}' << EOF
+      - name: Deploy Image
+        run: |
+          which ssh
+          # ssh '${{ secrets.deployment_user }}@${{ secrets.staging_deployment_server }}' << EOF
 
-      #     EOF
+          # EOF
 

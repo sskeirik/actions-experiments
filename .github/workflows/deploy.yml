@@ -25,10 +25,13 @@
 # 4. The jq tool has an expression language where each operator takes a JSON blob as input and produces JSON as output.
 #    In our tool, we use a few jq built-ins:
 #
-#    - map(expr)    - takes a JSON array and returns the array resulting from applying expr to each array element
-#    - select(expr) - takes any JSON value, returns nothing if expr applied to the value is falsy; otherwise, returns the value itself
-#    - .key         - takes a JSON object or null, returns either the value of the given key or 'null' if the key is not present or input is null
-#    - length       - takes a JSON array, returns its length
+#    - .              - the identity function
+#    - .key           - takes a JSON object or null, returns either the value of the given key or 'null' if the key is not present or input is null
+#    - map(expr)      - takes a JSON array and returns the array resulting from applying expr to each array element
+#    - select(expr)   - takes any JSON value, returns nothing if expr applied to the value is falsy; otherwise, returns the value itself
+#    - expr1 | expr2  - passes result of expr1 as input to expr2
+#    - length         - takes a JSON array, returns its length
+#    - all(cond)      - equivalent to 'map(cond) | . == true'
 
 name: Deploy
 
@@ -69,4 +72,4 @@ jobs:
           # ensure that we retrieved all workflow runs
           jq -e '.total_count == ( .workflow_runs | length )' <<< "$runs"
           # check that all runs have passed
-          jq -e 'all(.status == "completed" and .conclusion == "success")' <<< "$runs"
+          jq -e '.workflow_runs | all(.status == "completed" and .conclusion == "success")' <<< "$runs"

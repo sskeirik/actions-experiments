@@ -114,11 +114,18 @@ jobs:
           echo "$config_dir"
 
       - name: Deploy Image
+        env:
+          KEY:         ${{ secrets.DEPLOYMENT_USER_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOYMENT_USER_KNOWN_HOSTS }}
+          USER:        ${{ secrets.DEPLOYMENT_USER }}
+          SERVER:      ${{ secrets.STAGING_DEPLOYMENT_SERVER }}
         run: |
-          mkdir 700 "$HOME/.ssh"
-          echo "${{ secrets.deployment_user_key }}" > "$HOME/.ssh/id_ed25519"
+          mkdir -p 700 "$HOME/.ssh"
+          echo "$KEY" > "$HOME/.ssh/id_ed25519"
+          echo "$KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
           chmod 600 "$HOME/.ssh/id_ed25519"
-          ssh -i "$HOME/.ssh/id_ed25519" '${{ secrets.deployment_user }}@${{ secrets.staging_deployment_server }}' << EOF
+          chmod 600 "$HOME/.ssh/known_hosts"
+          ssh -t -i "$HOME/.ssh/id_ed25519" "$USER@$SERVER" << EOF
             cat /etc/os-release
           EOF
 

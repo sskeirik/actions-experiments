@@ -1,0 +1,39 @@
+name: Build and Push Docker Image
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - release/*
+    tags:
+      - '*'
+
+jobs:
+  build-and-push:
+    name: Build and Push to GHCR
+    runs-on: [self-hosted, aws, us-east-2, m6a.4xlarge]
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5.0.0
+        with:
+          fetch-depth: 0
+          repository: ${{ secrets.REPOSITORY }}
+          token: ${{ secrets.GH_REPO_TOKEN }}
+
+      # - name: Install dependencies
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install -y --no-install-recommends git pkg-config libssl-dev ca-certificates clang libclang-dev
+
+      - name: Setup Rust Toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          # set to false to configure cache manually so that we can add llvm-cov dir
+          cache: false
+
+      - name: Run Lightweight Tests
+        run: cargo test --features fee-for-test --workspace

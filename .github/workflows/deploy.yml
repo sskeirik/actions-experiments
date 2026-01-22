@@ -1,13 +1,13 @@
-name: Run Curl Test
+name: Deploy
 
 on:
-  pull_request
+  workflow_dispatch
 
 jobs:
-  push-test:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Run Curl
+      - name: Check PR Tests Pass
         run: |
           curl -L                                          \
             -H 'Accept: application/vnd.github+json'       \

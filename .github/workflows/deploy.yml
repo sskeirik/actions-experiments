@@ -39,9 +39,14 @@ on:
   workflow_dispatch:
     inputs:
       force:
-        description: "Force deployment to run without PR Process"
+        description: "Force Deployment Without Approved PR"
         type: boolean
         default: 'false'
+
+# Store user-defined inputs in env vars to avoid injections
+env:
+ REPO: ${{ github.repository }}
+ REF: ${{ github.ref_name }}
 
 jobs:
   deploy:
@@ -50,44 +55,38 @@ jobs:
       - name: Get Matching PR Head
         id: get_pr_head
         if: ${{ inputs.force == false }}
-        # Store user-defined inputs in env vars so control characters to avoid injections
-        env:
-          REPO: ${{ github.repository }}
-          REF: ${{ github.ref_name }}
         run: |
-          # get list of PRs for base branch
+          echo "List of PRs for $REF"
           prs=$( curl -L                                          \
                    -H 'Accept: application/vnd.github+json'       \
                    -H 'Authorization: Bearer ${{ github.token }}' \
                    -H 'X-GitHub-Api-Version: 2022-11-28'          \
                    '${{ github.api_url }}/repos/'"$REPO"'/pulls?state=closed&base='"$REF" )
-          echo "List of PRs for $REF"
           jq '.' <<< "$prs"
-          # for each PR whose merge commit matches the workflow branch commit hash, get the PR head commit sha
+
+          echo "Foreach PR into $REF, Get PR HEAD Commit SHA"
           matching_pr_heads=$( jq -c 'map( select( .merge_commit_sha == "${{ github.sha }}" ) | .head.sha )' <<< "$prs" )
-          echo "Matching PR Heads for $REF"
           jq '.' <<< "$matching_pr_heads"
-          # ensure that we only have 1 matching PR head
+
+          echo "Was There Exactly One Matching PR HEAD?"
           jq -e 'length == 1' <<< "$matching_pr_heads"
-          # output singular matching PR head
+
+          # Store Matching PR HEAD As Output
           echo "pr_head=$(jq -c '.[]' <<< "$matching_pr_heads" | tr -d '"')" >> "$GITHUB_OUTPUT"
 
       - name: Get Workflow Runs for Matching PR Head
         if: ${{ inputs.force == false }}
-        env:
-          REPO: ${{ github.repository }}
         run: |
-          # get workflow runs for the matching PR heads
+          echo 'Get Workflow Runs for PR Head ${{ steps.get_pr_head.outputs.pr_head }}'
           runs=$( curl -L                                          \
                     -H 'Accept: application/vnd.github+json'       \
                     -H 'Authorization: Bearer ${{ github.token }}' \
                     -H 'X-GitHub-Api-Version: 2022-11-28'          \
                     '${{ github.api_url }}/repos/'"$REPO"'/actions/runs?head_sha=${{ steps.get_pr_head.outputs.pr_head }}&per_page=100' )
-          echo 'Workflow Runs for PR Head ${{ steps.get_pr_head.outputs.pr_head }}'
           jq '.' <<< "$runs"
-          # ensure that we retrieved all workflow runs and that we have at least one
+
           echo 'Were All Workflow Runs for PR Head Retrieved?'
           jq -e '( .total_count == ( .workflow_runs | length ) ) and ( 0 < ( .workflow_runs | length ) )' <<< "$runs"
-          # check that all runs have passed
+
           echo 'Did All Workflow Runs Pass?'
           jq -e '.workflow_runs | all(.status == "completed" and .conclusion == "success")' <<< "$runs"

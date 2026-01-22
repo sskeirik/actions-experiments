@@ -125,7 +125,8 @@ jobs:
           echo "$KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
           chmod 600 "$HOME/.ssh/id_ed25519"
           chmod 600 "$HOME/.ssh/known_hosts"
-          ssh -t -i "$HOME/.ssh/id_ed25519" "$USER@$SERVER" << EOF
+          echo "Attmepting SSH"
+          ssh -i "$HOME/.ssh/id_ed25519" "$USER@$SERVER" << EOF
             cat /etc/os-release
           EOF
 

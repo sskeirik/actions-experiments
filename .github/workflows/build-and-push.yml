@@ -11,7 +11,7 @@ on:
 jobs:
   build-and-push:
     name: Build and Push to GHCR
-    runs-on: [self-hosted, aws, us-east-2, m6a.4xlarge]
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write

@@ -1,0 +1,19 @@
+name: Workflow Dispatch and Push Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_input:
+        description: "This is a test input"
+        type: boolean
+        default: 'false'
+  push:
+
+jobs:
+  my-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log Event Data
+        run: |
+          echo '${{ toJSON(inputs) }} ${{ inputs.test_input }}'
+          echo '${{ toJSON(github) }}'

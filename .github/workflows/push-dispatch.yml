@@ -5,9 +5,12 @@ on:
     inputs:
       test_input:
         description: "This is a test input"
-        type: boolean
-        default: 'false'
+        type: number
+        default: '5'
   push:
+
+env:
+  TEST_INPUT: ${{ case( github.event_name == 'workflow_dispatch', inputs.test_input, 5 ) }}
 
 jobs:
   my-job:
@@ -15,5 +18,6 @@ jobs:
     steps:
       - name: Log Event Data
         run: |
-          echo '${{ toJSON(inputs) }}'
+          echo 'Inputs context: ${{ inputs }}'
+          echo "Default TEST_INPUT: $TEST_INPUT"
           echo '${{ toJSON(github) }}'

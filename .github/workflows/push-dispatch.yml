@@ -15,5 +15,5 @@ jobs:
     steps:
       - name: Log Event Data
         run: |
-          echo '${{ toJSON(inputs) }} ${{ inputs.test_input }}'
+          echo '${{ toJSON(inputs) }}'
           echo '${{ toJSON(github) }}'
